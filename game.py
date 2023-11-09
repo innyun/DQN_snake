@@ -10,7 +10,7 @@ pygame.init()
 font = pygame.font.SysFont('arial', 24)
 
 BLOCK_SIZE = 20
-SPEED = 100
+SPEED = 2000
 WIDTH = 400
 HEIGHT = 400
 
@@ -49,7 +49,7 @@ class SnakeGameAI:
             self.place_food()
 
     def step(self, action):
-        reward = 0
+        reward = -.01
 
         self.frame += 1
         for event in pygame.event.get():
