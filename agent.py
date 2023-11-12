@@ -5,11 +5,13 @@ from collections import deque
 from game import SnakeGameAI, Direction, Point
 from model import Linear_QNet, QTrainer
 from plot_helper import plot
+from pygame_screen_record.ScreenRecorder import ScreenRecorder
+import os
+from sys import getsizeof
 
 MAX_MEMORY = 100_000
 BATCH_SIZE = 1000
 LR = 0.001
-
 
 class Agent:
     def __init__(self):
@@ -105,6 +107,9 @@ def train():
     record = 0
     agent = Agent()
     game = SnakeGameAI()
+
+    recorder = ScreenRecorder(60).start_rec()
+
     while True:
         state_old = agent.get_state(game)
 
@@ -118,11 +123,17 @@ def train():
         agent.remember(state_old, move, reward, state_new, game_over)
 
         if game_over:
+            recorder.stop_rec()
             game.reset()
             agent.n_games += 1
             agent.train_long_memory()
 
             if score > record:
+                if os.path.exists("./model/best_model_recording.mp4"):
+                    os.remove("./model/best_model_recording.mp4")
+                recording = recorder.get_single_recording()
+                print(getsizeof(recording))
+                recording.save(("./model/best_model_recording", "mp4"))
                 record = score
                 agent.model.save()
 
@@ -133,6 +144,8 @@ def train():
             mean_score = total / agent.n_games
             mean_scores.append(mean_score)
             plot(scores, mean_scores)
+
+            recorder = ScreenRecorder(60).start_rec()
 
 
 if __name__ == '__main__':

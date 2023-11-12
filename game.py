@@ -10,7 +10,7 @@ pygame.init()
 font = pygame.font.SysFont('arial', 24)
 
 BLOCK_SIZE = 20
-SPEED = 2000
+SPEED = 40
 WIDTH = 400
 HEIGHT = 400
 
