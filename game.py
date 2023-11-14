@@ -9,10 +9,12 @@ pygame.init()
 
 font = pygame.font.SysFont('arial', 24)
 
-BLOCK_SIZE = 20
-SPEED = 40
-WIDTH = 400
-HEIGHT = 400
+block_size = 20
+speed = 40
+width = 400
+height = 400
+
+render = False
 
 
 class Direction(Enum):
@@ -32,18 +34,21 @@ BLACK = (0, 0, 0)
 
 
 class SnakeGameAI:
-    def __init__(self, w=WIDTH, h=HEIGHT):
+    def __init__(self, w=width, h=height, speed=speed, render=False):
         self.w = w
         self.h = h
+        self.speed = speed
+        self.render = render
 
-        self.display = pygame.display.set_mode((self.w, self.h))
-        pygame.display.set_caption("Snake")
+        if self.render:
+            self.display = pygame.display.set_mode((self.w, self.h))
+            pygame.display.set_caption("Snake")
         self.clock = pygame.time.Clock()
         self.reset()
 
     def place_food(self):
-        x = random.randint(0, (self.w-BLOCK_SIZE)//BLOCK_SIZE)*BLOCK_SIZE
-        y = random.randint(0, (self.h-BLOCK_SIZE)//BLOCK_SIZE)*BLOCK_SIZE
+        x = random.randint(0, (self.w - block_size) // block_size) * block_size
+        y = random.randint(0, (self.h - block_size) // block_size) * block_size
         self.food = Point(x, y)
         if self.food in self.snake:
             self.place_food()
@@ -73,8 +78,9 @@ class SnakeGameAI:
         else:
             self.snake.pop()
 
-        self.update_ui()
-        self.clock.tick(SPEED)
+        if self.render:
+            self.update_ui()
+        self.clock.tick(self.speed)
 
         return reward, game_over, self.score
 
@@ -82,7 +88,7 @@ class SnakeGameAI:
         if pt is None:
             pt = self.head
 
-        if pt.x > self.w - BLOCK_SIZE or pt.x < 0 or pt.y > self.h - BLOCK_SIZE or pt.y < 0:
+        if pt.x > self.w - block_size or pt.x < 0 or pt.y > self.h - block_size or pt.y < 0:
             return True
 
         if pt in self.snake[1:]:
@@ -94,9 +100,9 @@ class SnakeGameAI:
         self.display.fill(BLACK)
 
         for i in self.snake:
-            pygame.draw.rect(self.display, BLUE, pygame.Rect(i.x, i.y, BLOCK_SIZE, BLOCK_SIZE))
+            pygame.draw.rect(self.display, BLUE, pygame.Rect(i.x, i.y, block_size, block_size))
 
-        pygame.draw.circle(self.display, RED, (self.food.x + (BLOCK_SIZE/2) + 1, self.food.y + (BLOCK_SIZE/2) + 1), BLOCK_SIZE/2 - .5)
+        pygame.draw.circle(self.display, RED, (self.food.x + (block_size / 2) + 1, self.food.y + (block_size / 2) + 1), block_size / 2 - .5)
 
         text = font.render("Score: " + str(self.score), True, WHITE)
         self.display.blit(text, [0, 0])
@@ -121,13 +127,13 @@ class SnakeGameAI:
         x = self.head.x
         y = self.head.y
         if self.direction == Direction.RIGHT:
-            x += BLOCK_SIZE
+            x += block_size
         elif self.direction == Direction.LEFT:
-            x -= BLOCK_SIZE
+            x -= block_size
         elif self.direction == Direction.DOWN:
-            y += BLOCK_SIZE
+            y += block_size
         elif self.direction == Direction.UP:
-            y -= BLOCK_SIZE
+            y -= block_size
 
         self.head = Point(x, y)
 
@@ -135,7 +141,7 @@ class SnakeGameAI:
         self.direction = Direction.RIGHT
 
         self.head = Point(self.w/2, self.h/2)
-        self.snake = [self.head, Point(self.head.x-BLOCK_SIZE, self.head.y), Point(self.head.x-(2*BLOCK_SIZE), self.head.y)]
+        self.snake = [self.head, Point(self.head.x - block_size, self.head.y), Point(self.head.x - (2 * block_size), self.head.y)]
 
         self.score = 0
         self.food = None

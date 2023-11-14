@@ -7,20 +7,26 @@ from model import Linear_QNet, QTrainer
 from plot_helper import plot
 from pygame_screen_record.ScreenRecorder import ScreenRecorder
 import os
-from sys import getsizeof
 
-MAX_MEMORY = 100_000
-BATCH_SIZE = 1000
-LR = 0.001
+max_memory = 100_000
+batch_size = 1000
+lr = 0.0005
+
+train_games = 1000
+test_games = 100
+
+train_speed = 10000
+test_speed = 40
+
 
 class Agent:
     def __init__(self):
         self.n_games = 0
         self.epsilon = 0
         self.gamma = .9
-        self.memory = deque(maxlen=MAX_MEMORY)
+        self.memory = deque(maxlen=max_memory)
         self.model = Linear_QNet(11, 256, 3)
-        self.trainer = QTrainer(self.model, LR, self.gamma)
+        self.trainer = QTrainer(self.model, lr, self.gamma)
 
     def get_state(self, game):
         head = game.snake[0]
@@ -72,8 +78,8 @@ class Agent:
         self.memory.append((state, action, reward, next_state, game_over))
 
     def train_long_memory(self):
-        if len(self.memory) > BATCH_SIZE:
-            sample = random.sample(self.memory, BATCH_SIZE)
+        if len(self.memory) > batch_size:
+            sample = random.sample(self.memory, batch_size)
         else:
             sample = self.memory
 
@@ -105,12 +111,10 @@ def train():
     mean_scores = []
     total = 0
     record = 0
-    agent = Agent()
-    game = SnakeGameAI()
 
-    recorder = ScreenRecorder(60).start_rec()
+    game = SnakeGameAI(speed=train_speed, render=False)
 
-    while True:
+    while agent.n_games < train_games:
         state_old = agent.get_state(game)
 
         move = agent.get_action(state_old)
@@ -123,21 +127,15 @@ def train():
         agent.remember(state_old, move, reward, state_new, game_over)
 
         if game_over:
-            recorder.stop_rec()
             game.reset()
             agent.n_games += 1
             agent.train_long_memory()
 
             if score > record:
-                if os.path.exists("./model/best_model_recording.mp4"):
-                    os.remove("./model/best_model_recording.mp4")
-                recording = recorder.get_single_recording()
-                print(getsizeof(recording))
-                recording.save(("./model/best_model_recording", "mp4"))
                 record = score
                 agent.model.save()
 
-            print(f"Game: {agent.n_games}, Score: {score}, Record: {record}")
+            print(f"Training Phase: Game {agent.n_games}/{train_games}, Score {score}, Record {record}")
 
             scores.append(score)
             total += score
@@ -145,8 +143,37 @@ def train():
             mean_scores.append(mean_score)
             plot(scores, mean_scores)
 
+
+def test():
+    game = SnakeGameAI(speed=test_speed, render=True)
+    record = 0
+
+    recorder = ScreenRecorder(60).start_rec()
+
+    i = 0
+
+    while i < test_games:
+        state = agent.get_state(game)
+        move = agent.get_action(state)
+        reward, game_over, score = game.step(move)
+
+        if game_over:
+            recorder.stop_rec()
+            game.reset()
+            i += 1
+
+            if score > record:
+                if os.path.exists("./model/best_model_recording.mp4"):
+                    os.remove("./model/best_model_recording.mp4")
+                recording = recorder.get_single_recording()
+                recording.save(("./model/best_model_recording", "mp4"))
+                record = score
+
+            print(f"Testing Phase: Game {i + 1}/{test_games}, Score {score}, Record {record}")
+
             recorder = ScreenRecorder(60).start_rec()
 
-
 if __name__ == '__main__':
+    agent = Agent()
     train()
+    test()
