@@ -169,7 +169,7 @@ def test():
                 recording.save(("./model/best_model_recording", "mp4"))
                 record = score
 
-            print(f"Testing Phase: Game {i + 1}/{test_games}, Score {score}, Record {record}")
+            print(f"Testing Phase: Game {i}/{test_games}, Score {score}, Record {record}")
 
             recorder = ScreenRecorder(60).start_rec()
 
