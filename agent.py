@@ -70,7 +70,7 @@ class Agent:
             game.food.x > game.head.x,  # food right
             game.food.y < game.head.y,  # food up
             game.food.y > game.head.y  # food down
-            ]
+        ]
 
         return np.array(state, dtype=int)
 
@@ -172,6 +172,7 @@ def test():
             print(f"Testing Phase: Game {i}/{test_games}, Score {score}, Record {record}")
 
             recorder = ScreenRecorder(60).start_rec()
+
 
 if __name__ == '__main__':
     agent = Agent()

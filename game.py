@@ -148,16 +148,3 @@ class SnakeGameAI:
         self.place_food()
         self.frame = 0
 
-
-# if __name__ == '__main__':
-#     game = SnakeGameAI()
-#
-#     while True:
-#         game_over, score = game.step()
-#
-#         if game_over:
-#             break
-#
-#     print(f"Final score: {score}")
-#
-#     pygame.quit()
